@@ -144,11 +144,13 @@ public static class WebApplicationBuilderExtensions
     {
         builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetSection(nameof(JwtConfiguration)));
         builder.Services.Configure<FileStorageConfiguration>(builder.Configuration.GetSection(nameof(FileStorageConfiguration)));
+        builder.Services.Configure<MailConfiguration>(builder.Configuration.GetSection(nameof(MailConfiguration)));
         builder.Services
             .AddTransient<IUserService, UserService>()
             .AddTransient<ILoginService, LoginService>()
             .AddTransient<IFileRepository, FileRepository>()
-            .AddTransient<IUserFileService, UserFileService>();
+            .AddTransient<IUserFileService, UserFileService>()
+            .AddTransient<IMailService, MailService>();
 
         return builder;
     }

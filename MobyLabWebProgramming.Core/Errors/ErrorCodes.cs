@@ -14,5 +14,6 @@ public enum ErrorCodes
     WrongPassword,
     CannotAdd,
     CannotUpdate,
-    CannotDelete
+    CannotDelete,
+    MailSendFailed
 }

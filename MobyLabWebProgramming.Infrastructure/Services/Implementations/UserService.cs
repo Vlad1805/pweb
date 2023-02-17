@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using MobyLabWebProgramming.Core.Constants;
 using MobyLabWebProgramming.Core.DataTransferObjects;
 using MobyLabWebProgramming.Core.Entities;
 using MobyLabWebProgramming.Core.Enums;
@@ -16,11 +17,13 @@ public class UserService : IUserService
 {
     private readonly IRepository<WebAppDatabaseContext> _repository;
     private readonly ILoginService _loginService;
+    private readonly IMailService _mailService;
 
-    public UserService(IRepository<WebAppDatabaseContext> repository, ILoginService loginService)
+    public UserService(IRepository<WebAppDatabaseContext> repository, ILoginService loginService, IMailService mailService)
     {
         _repository = repository;
         _loginService = loginService;
+        _mailService = mailService;
     }
 
     public async Task<ServiceResponse<UserDTO>> GetUser(Guid id, CancellationToken cancellationToken = default)
@@ -92,6 +95,8 @@ public class UserService : IUserService
             Role = user.Role,
             Password = user.Password
         }, cancellationToken);
+
+        await _mailService.SendMail(user.Email, "Welcome!", MailTemplates.UserAddTemplate(user.Name), true, "My App", cancellationToken);
 
         return ServiceResponse.ForSuccess();
     }
