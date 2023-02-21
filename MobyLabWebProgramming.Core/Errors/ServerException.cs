@@ -2,6 +2,10 @@
 
 namespace MobyLabWebProgramming.Core.Errors;
 
+/// <summary>
+/// This is an alternative solution to the ServiceResponse class if you rather want to use exceptions.
+/// You may add more exceptions for other HTTP codes as you like.
+/// </summary>
 public class ServerException : Exception
 {
     public HttpStatusCode Status { get; }

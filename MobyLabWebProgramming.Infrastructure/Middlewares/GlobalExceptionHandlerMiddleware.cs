@@ -6,6 +6,9 @@ using MobyLabWebProgramming.Core.Errors;
 
 namespace MobyLabWebProgramming.Infrastructure.Middlewares;
 
+/// <summary>
+/// This is the global exception handler/middleware, when a HTTP request arrives it is invoked, if an uncaught exception is caught here it sends a error message back to the client.
+/// </summary>
 public class GlobalExceptionHandlerMiddleware
 {
     private readonly ILogger<GlobalExceptionHandlerMiddleware> _logger;
@@ -21,7 +24,7 @@ public class GlobalExceptionHandlerMiddleware
     {
         try
         {
-            await _next(context);
+            await _next(context); // Here the next middleware is invoked, the last middleware invoked calls the corresponding controller method for the specified route.
         }
         catch (Exception ex)
         {

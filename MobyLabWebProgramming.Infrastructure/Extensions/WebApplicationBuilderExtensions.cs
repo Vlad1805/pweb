@@ -25,12 +25,15 @@ namespace MobyLabWebProgramming.Infrastructure.Extensions;
 
 public static class WebApplicationBuilderExtensions
 {
+    /// <summary>
+    /// This extension method adds the database configuration and repository to the application builder.
+    /// </summary>
     public static WebApplicationBuilder AddRepository(this WebApplicationBuilder builder)
     {
-        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true); // This is used to avoid some errors with the timezone when working with timestamps.
 
         builder.Services.AddDbContext<WebAppDatabaseContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("WebAppDatabase"),
+            options.UseNpgsql(builder.Configuration.GetConnectionString("WebAppDatabase"), // This gets the connection string from ConnectionStrings.WebAppDatabase in appsettings.json.
                 o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
                     .CommandTimeout((int)TimeSpan.FromMinutes(15).TotalSeconds)));
         builder.Services.AddTransient<IRepository<WebAppDatabaseContext>, Repository<WebAppDatabaseContext>>();
@@ -38,6 +41,9 @@ public static class WebApplicationBuilderExtensions
         return builder;
     }
 
+    /// <summary>
+    /// This extension method adds the CORS configuration to the application builder.
+    /// </summary>
     public static WebApplicationBuilder AddCorsConfiguration(this WebApplicationBuilder builder)
     {
         var corsConfiguration = builder.Configuration.GetSection(nameof(CorsConfiguration)).Get<CorsConfiguration>();
@@ -46,7 +52,7 @@ public static class WebApplicationBuilderExtensions
             options.AddDefaultPolicy(
                 policyBuilder =>
                 {
-                    policyBuilder.WithOrigins(corsConfiguration.Origins)
+                    policyBuilder.WithOrigins(corsConfiguration.Origins) // This adds the valid origins that the browser client can have.
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();
@@ -56,64 +62,78 @@ public static class WebApplicationBuilderExtensions
         return builder;
     }
 
+    /// <summary>
+    /// This extension method adds the controllers and JSON serialization configuration to the application builder.
+    /// </summary>
     public static WebApplicationBuilder AddApi(this WebApplicationBuilder builder)
     {
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer()
             .AddMvc()
             .AddJsonOptions(options => {
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); // Adds a conversion by name of the enums, otherwise numbers representing the enum values are used.
+                options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase; // This converts the public property names of the objects serialized to Camel case.
+                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true; // When deserializing request the properties of the JSON are mapped ignoring the casing.
             });
 
         return builder;
     }
 
+    /// <summary>
+    /// This extension method adds the default authorization policy to the AuthorizationPolicyBuilder.
+    /// It requires that the JWT needs to have the given claims in the configuration.
+    /// </summary>
     private static AuthorizationPolicyBuilder AddDefaultPolicy(this AuthorizationPolicyBuilder policy) =>
         policy.RequireClaim(ClaimTypes.NameIdentifier)
             .RequireClaim(ClaimTypes.Name)
             .RequireClaim(ClaimTypes.Email);
 
+
+    /// <summary>
+    /// This extension method adds just the authorization configuration to the application builder.
+    /// </summary>
     private static WebApplicationBuilder ConfigureAuthentication(this WebApplicationBuilder builder)
     {
         builder.Services.AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme; // This is to use the JWT token with the "Bearer" scheme
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(options =>
             {
-                var jwtConfiguration = builder.Configuration.GetSection(nameof(JwtConfiguration)).Get<JwtConfiguration>();
+                var jwtConfiguration = builder.Configuration.GetSection(nameof(JwtConfiguration)).Get<JwtConfiguration>(); // Here we use the JWT configuration from the application.json.
 
-                var key = Encoding.ASCII.GetBytes(jwtConfiguration.Key);
+                var key = Encoding.ASCII.GetBytes(jwtConfiguration.Key); // Use configured key to verify the JWT signature.
                 options.TokenValidationParameters = new()
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidAudience = jwtConfiguration.Audience,
-                    ValidIssuer = jwtConfiguration.Issuer,
-                    ClockSkew = TimeSpan.Zero
+                    ValidateIssuer = true, // Validate the issuer claim in the JWT. 
+                    ValidateAudience = true, // Validate the audience claim in the JWT.
+                    ValidAudience = jwtConfiguration.Audience, // Sets the intended audience.
+                    ValidIssuer = jwtConfiguration.Issuer, // Sets the issuing authority.
+                    ClockSkew = TimeSpan.Zero // No clock skew is added, when the token expires it will immediately become unusable.
                 };
                 options.RequireHttpsMetadata = false;
                 options.IncludeErrorDetails = true;
             }).Services
             .AddAuthorization(options =>
             {
-                options.DefaultPolicy = new AuthorizationPolicyBuilder().AddDefaultPolicy().Build();
+                options.DefaultPolicy = new AuthorizationPolicyBuilder().AddDefaultPolicy().Build(); // Adds the default policy for the JWT claims.
             });
 
         return builder;
     }
 
+    /// <summary>
+    /// This extension method adds the authorization with the Swagger configuration to the application builder.
+    /// </summary>
     public static WebApplicationBuilder AddAuthorizationWithSwagger(this WebApplicationBuilder builder, string application)
     {
         builder.Services.AddSwaggerGen(c =>
         {
             c.SchemaFilter<SmartEnumSchemaFilter>();
-            c.SwaggerDoc("v1", new() { Title = application, Version = "v1" });
-            c.AddSecurityDefinition("Bearer", new()
+            c.SwaggerDoc("v1", new() { Title = application, Version = "v1" }); // Adds the application name and version, there can be more than one version for the API.
+            c.AddSecurityDefinition("Bearer", new() // This is to configure the authorization in the Swagger client so that you may test authorized routes.
             {
                 Name = "Authorization",
                 Type = SecuritySchemeType.ApiKey,
@@ -140,6 +160,9 @@ public static class WebApplicationBuilderExtensions
         return builder.ConfigureAuthentication();
     }
 
+    /// <summary>
+    /// This extension method adds any necessary services to the application builder that need to be injected by the framework.
+    /// </summary>
     public static WebApplicationBuilder AddServices(this WebApplicationBuilder builder)
     {
         builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetSection(nameof(JwtConfiguration)));
@@ -155,6 +178,9 @@ public static class WebApplicationBuilderExtensions
         return builder;
     }
 
+    /// <summary>
+    /// This extension method adds the advanced logging configuration to the application builder.
+    /// </summary>
     public static WebApplicationBuilder UseLogger(this WebApplicationBuilder builder)
     {
         builder.Host.UseSerilog((_, logger) =>
@@ -175,6 +201,9 @@ public static class WebApplicationBuilderExtensions
         return builder;
     }
 
+    /// <summary>
+    /// This extension method adds asynchronous workers to the application builder.
+    /// </summary>
     public static WebApplicationBuilder AddWorkers(this WebApplicationBuilder builder)
     {
         builder.Services.AddHostedService<InitializerWorker>();

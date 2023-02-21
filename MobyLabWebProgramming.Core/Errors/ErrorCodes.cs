@@ -2,6 +2,9 @@
 
 namespace MobyLabWebProgramming.Core.Errors;
 
+/// <summary>
+/// This enumeration represents codes for common errors and should be used to better identify the error by the client. You may add or remove codes as you see fit.
+/// </summary>
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ErrorCodes
 {
@@ -10,7 +13,6 @@ public enum ErrorCodes
     EntityNotFound,
     PhysicalFileNotFound,
     UserAlreadyExists,
-    EmailAlreadyInUse,
     WrongPassword,
     CannotAdd,
     CannotUpdate,

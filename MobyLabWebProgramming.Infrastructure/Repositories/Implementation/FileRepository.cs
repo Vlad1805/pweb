@@ -14,19 +14,26 @@ public class FileRepository : IFileRepository
 
     public static void CreateIfNotExists(string path)
     {
-        if (!Directory.Exists(path))
+        if (!Directory.Exists(path)) // If the directory path doesn't exist it should be created.
         {
             Directory.CreateDirectory(path);
         }
     }
 
+    /// <summary>
+    /// This gets a new unique filename.
+    /// When managing files the filename on your filesystem should be one decided by the application to avoid security issues and avoid overriding the files by requesting a unique filename.
+    /// </summary>
     private static string NewFileName(string extension) =>
         Path.GetRandomFileName() + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + extension;
 
+    /// <summary>
+    /// Inject the required service configuration from the application.json or environment variables.
+    /// </summary>
     public FileRepository(IOptions<FileStorageConfiguration> fileStorage)
     {
         FileStoragePath = fileStorage.Value.SavePath;
-        CreateIfNotExists(FileStoragePath);
+        CreateIfNotExists(FileStoragePath); // Create the file storage path if it doesn't exist.
     }
 
     public ServiceResponse<FileDTO> GetFile(string filePath, string? replacedFileName = default)

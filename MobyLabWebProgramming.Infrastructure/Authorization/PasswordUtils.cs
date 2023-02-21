@@ -12,6 +12,9 @@ public static class PasswordUtils
         0xFA, 0xF1, 0x32, 0x46
     };
 
+    /// <summary>
+    /// This is a simple method to hash a password string.
+    /// </summary>
     public static string HashPassword(string password) =>
         Convert.ToBase64String(KeyDerivation.Pbkdf2(password, Salt, KeyDerivationPrf.HMACSHA256, 1000, 256 / 8));
 }

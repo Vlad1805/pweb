@@ -1,5 +1,8 @@
 ﻿namespace MobyLabWebProgramming.Core.Constants;
 
+/// <summary>
+/// Here we have a class that provides HTML template for mail bodies. You ami add or change the template if you like.
+/// </summary>
 public static class MailTemplates
 {
     public static string UserAddTemplate(string name) => $@"<!DOCTYPE html>

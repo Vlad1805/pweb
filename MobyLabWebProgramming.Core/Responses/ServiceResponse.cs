@@ -2,6 +2,9 @@
 
 namespace MobyLabWebProgramming.Core.Responses;
 
+/// <summary>
+/// These classes are used as responses from service methods as either a success responses or as error responses.
+/// </summary>
 public class ServiceResponse
 {
     public ErrorMessage? Error { get; set; }
@@ -24,6 +27,10 @@ public class ServiceResponse<T> : ServiceResponse
     private ServiceResponse() { }
 }
 
+/// <summary>
+/// These are extension methods for the ServiceResponse classes.
+/// They can be used to functionally process data within the ServiceResponse object.
+/// </summary>
 public static class ServiceResponseExtension
 {
     public static ServiceResponse<TOut> Map<TIn, TOut>(this ServiceResponse<TIn> response, Func<TIn, TOut> selector) where TIn : class where TOut : class =>

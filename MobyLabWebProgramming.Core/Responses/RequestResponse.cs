@@ -2,9 +2,18 @@
 
 namespace MobyLabWebProgramming.Core.Responses;
 
+/// <summary>
+/// This class is used to encapsulate data or errors for the client as a response to the HTTP request.
+/// </summary>
 public class RequestResponse<T>
 {
+    /// <summary>
+    /// This is the response to the request, if an error occurred this should be null. 
+    /// </summary>
     public T? Response { get; private init; }
+    /// <summary>
+    /// This is the error message for the error that occurred while responding to the request, if no error occurred this should be null. 
+    /// </summary>
     public ErrorMessage? ErrorMessage { get; private init; }
 
     protected RequestResponse() { }

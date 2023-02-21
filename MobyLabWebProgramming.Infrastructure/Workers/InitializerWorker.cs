@@ -7,6 +7,9 @@ using MobyLabWebProgramming.Infrastructure.Services.Interfaces;
 
 namespace MobyLabWebProgramming.Infrastructure.Workers;
 
+/// <summary>
+/// This is an example of a worker service, this service is called on the applications start to do some asynchronous work.
+/// </summary>
 public class InitializerWorker : BackgroundService
 {
     private readonly ILogger<InitializerWorker> _logger;
@@ -14,16 +17,17 @@ public class InitializerWorker : BackgroundService
 
     public InitializerWorker(ILogger<InitializerWorker> logger, IServiceProvider serviceProvider)
     {
-        _logger = logger;
-        _serviceProvider = serviceProvider;
+        _logger = logger; // The logger instance is injected here.
+        _serviceProvider = serviceProvider; // Here the service provider is injected to request other components on runtime at request.
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         try
         {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            var userService = scope.ServiceProvider.GetService<IUserService>();
+            await using var scope = _serviceProvider.CreateAsyncScope(); // Here a new scope is created, this is useful to get new scoped instances.
+            var userService = scope.ServiceProvider.GetService<IUserService>(); // Here an instance for a service is requested, it may fail if the component is not declared or
+                                                                                // an exception is thrown on it’s creation.
 
             if (userService == null)
             {

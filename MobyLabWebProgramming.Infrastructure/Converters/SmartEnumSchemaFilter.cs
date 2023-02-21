@@ -5,6 +5,10 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace MobyLabWebProgramming.Infrastructure.Converters;
+
+/// <summary>
+/// This class is used to make the swagger compatible with the smart enums.
+/// </summary>
 public sealed class SmartEnumSchemaFilter : ISchemaFilter
 {
     public void Apply(OpenApiSchema schema, SchemaFilterContext context)
