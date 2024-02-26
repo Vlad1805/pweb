@@ -43,7 +43,7 @@ public class FileRepository : IFileRepository
             var path = Path.Join(FileStoragePath, filePath);
 
             return File.Exists(path)
-                ? ServiceResponse<FileDTO>.ForSuccess(new(File.Open(path, FileMode.Open), replacedFileName ?? Path.GetFileName(filePath)))
+                ? ServiceResponse<FileDTO>.ForSuccess(new(File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read), replacedFileName ?? Path.GetFileName(filePath)))
                 : ServiceResponse<FileDTO>.FromError(CommonErrors.FileNotFound);
         }
         catch
@@ -64,6 +64,7 @@ public class FileRepository : IFileRepository
             var fileStream = File.Open(savePath, FileMode.CreateNew);
 
             file.CopyTo(fileStream);
+            fileStream.Seek(0, SeekOrigin.Begin);
 
             return ServiceResponse<FileDTO>.ForSuccess(new(fileStream, newName));
         }
@@ -126,7 +127,6 @@ public class FileRepository : IFileRepository
             using var fileStream = File.Open(savePath, FileMode.CreateNew);
 
             fileStream.Write(file);
-            fileStream.Seek(0, SeekOrigin.Begin);
 
             return ServiceResponse<string>.ForSuccess(newName);
         }
@@ -152,7 +152,6 @@ public class FileRepository : IFileRepository
             }
 
             var fileStream = File.Open(filePath, FileMode.Truncate);
-
             file.CopyTo(fileStream);
             fileStream.Seek(0, SeekOrigin.Begin);
 
@@ -179,10 +178,8 @@ public class FileRepository : IFileRepository
                 filePath = newPath;
             }
 
-            var fileStream = File.Open(filePath, FileMode.Truncate);
-
+            using var fileStream = File.Open(filePath, FileMode.Truncate);
             file.CopyTo(fileStream);
-            fileStream.Seek(0, SeekOrigin.Begin);
 
             return ServiceResponse<string>.ForSuccess(Path.GetFileName(filePath));
         }
@@ -215,10 +212,8 @@ public class FileRepository : IFileRepository
         try
         {
             filePath = Path.Join(FileStoragePath, filePath);
-            var fileStream = File.Open(filePath, FileMode.Truncate);
-
+            using var fileStream = File.Open(filePath, FileMode.Truncate);
             fileStream.Write(file);
-            fileStream.Seek(0, SeekOrigin.Begin);
 
             return ServiceResponse<string>.ForSuccess(Path.GetFileName(filePath));
         }
