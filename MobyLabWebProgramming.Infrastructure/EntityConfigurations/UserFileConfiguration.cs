@@ -21,7 +21,7 @@ public class UserFileConfiguration : IEntityTypeConfiguration<UserFile>
             .HasMaxLength(255)
             .IsRequired();
         builder.Property(e => e.Description)
-            .HasMaxLength(4095)
+            .HasMaxLength(255)
             .IsRequired(false); // This specifies that this column can be null in the database.
         builder.Property(e => e.CreatedAt)
             .IsRequired();
